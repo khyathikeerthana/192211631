@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doubly Linked List Visualizer</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    input { padding: 8px; margin: 5px; }
+    button { padding: 10px 15px; margin: 5px; }
+    #output { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Doubly Linked List Visualizer</h1>
+  <input type="number" id="value" placeholder="Enter value" />
+  <button onclick="insert()">Insert</button>
+  <button onclick="del()">Delete</button>
+  <button onclick="display('forward')">Display Forward</button>
+  <button onclick="display('backward')">Display Backward</button>
+  <div id="output"></div>
+
+  <script>
+    const baseURL = "http://localhost:3000";
+
+    async function insert() {
+      const value = document.getElementById("value").value;
+      if (!value) return alert("Enter a value");
+
+      const res = await fetch(`${baseURL}/insert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: parseInt(value) })
+      });
+
+      const data = await res.json();
+      displayList("Inserted: " + value, data.forward);
+    }
+
+    async function del() {
+      const value = document.getElementById("value").value;
+      if (!value) return alert("Enter a value");
+
+      const res = await fetch(`${baseURL}/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: parseInt(value) })
+      });
+
+      const data = await res.json();
+      if (data.status === "Not Found") {
+        document.getElementById("output").innerText = "Value not found";
+      } else {
+        displayList("Deleted: " + value, data.forward);
+      }
+    }
+
+    async function display(dir) {
+      const res = await fetch(`${baseURL}/${dir}`);
+      const data = await res.json();
+      const message = dir.charAt(0).toUpperCase() + dir.slice(1) + ":";
+      displayList(message, data.values);
+    }
+
+    function displayList(message, values) {
+      document.getElementById("output").innerText = `${message} ${values.join(" <-> ")}`;
+    }
+  </script>
+</body>
+</html>
